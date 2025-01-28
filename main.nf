@@ -33,7 +33,7 @@ process prepareData {
   publishDir "${params.outdir}", mode: 'copy'
 
   input:
-  tuple val(caller), path(file_list)
+  tuple val(caller), file(file_list)
   
   output:
   tuple val(caller), file("prepareData_${caller}/"), emit: out
@@ -54,7 +54,7 @@ process signatureFit {
   publishDir "${params.outdir}", mode: 'copy'
 
   input:
-  tuple val(caller), path(prepared_datadir)
+  tuple val(caller), file(prepared_datadir)
 
   output:
   tuple val(caller), file("signatureFit_${caller}/"), emit: out
@@ -103,7 +103,7 @@ process selectSigFitSolutions {
   publishDir "${params.outdir}", mode: 'copy'
 
   input:
-  tuple val(caller), path(signaturefit_datadir)
+  tuple val(caller), file(signaturefit_datadir)
 
   output:
   tuple val(caller), file("signatureFit_${caller}_selectedSolutions/"), emit: out
@@ -128,8 +128,8 @@ process hrDetect {
   publishDir "${params.outdir}", mode: 'copy'
 
   input:
-  tuple val(callers), path(prepared_datadir)
-  tuple val(callersSS), path(selectedSolution_datadir)
+  tuple val(callers), file(prepared_datadir)
+  tuple val(callersSS), file(selectedSolution_datadir)
 
   output:
   file("hrDetect/")
