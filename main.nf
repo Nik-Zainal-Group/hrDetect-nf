@@ -219,7 +219,7 @@ workflow {
     .collect(flat:false).map {it.transpose()}
   selectSigFitData_tr = selectSigFitData.out
     // must output a dummy file when channel is empty
-    .ifEmpty(['novalue', file("${params.outdir}/no_sig_selection.txt")])
+    .ifEmpty(['novalue', file(params.inputlist)])
     .collect(flat:false).map {it.transpose()}
 
   hrDetect(prepData_tr, selectSigFitData_tr)
