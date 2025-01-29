@@ -1,10 +1,10 @@
 #!/usr/bin/env nextflow
 
 def columns = 
-	file(params.inputlist)
-	.readLines()
-	.first()
-	.split(",")
+  file(params.inputlist)
+  .readLines()
+  .first()
+  .split(",")
   .drop(1)
   .collect()
 
@@ -32,6 +32,8 @@ columns.eachWithIndex {
 //Multiple input lists are created from the input CSV file
 //The transformed lists for each caller are sent to PrepareData
 process createLists {
+  label 'awscli_bcftools'
+  
   input:
   tuple val(caller), val(sampleIDs), path(input_data, stageAs: "?/*")
 
