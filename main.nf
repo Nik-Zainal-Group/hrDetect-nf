@@ -1,7 +1,5 @@
 #!/usr/bin/env nextflow
-// The input list is transformed into multiple distinct input lists 
-// for individual callers. A channel of the transformed input lists 
-// is created and used as input to prepareData.
+
 def columns = 
 	file(params.inputlist)
 	.readLines()
@@ -10,22 +8,42 @@ def columns =
   .drop(1)
   .collect()
 
+def sampleIDs =
+  file(params.inputlist)
+  .readLines()
+  .drop(1)
+  .collect { it.split(",")[0] }
+
+Ch_input = Channel.empty()
 columns.eachWithIndex { 
-	it, index ->
-	Channel 
-	  .fromPath(params.inputlist)
-	  .splitCsv(header:false, skip:1)
-	 	.map { col -> "${col[0]}\t${col[index+1]}" }
-	 	.collectFile( newLine: true, sort:false,
-	        name: "${params.outdir}/input_lists/${it}.txt"
-	        )  	
+  it, index ->
+  listChannel = Channel
+    .fromPath(params.inputlist)
+    .splitCsv(header:false, skip:1)
+    .map { cols -> file("${cols[index+1]}".trim()) }
+    .toList()
+  def tupleChannel = listChannel.map { list ->
+    tuple("${it}", sampleIDs, list)
+  }
+  //channel of [caller1,[ID1,ID2,..],[file1,file2,..],...]
+  Ch_input=Ch_input.concat(tupleChannel)
 }
 
-Ch_inputdata=Channel
-  .fromList(columns) 
-  .map{ it -> [ it, 
-    file("${params.outdir}/input_lists/" + it + ".txt") ]
-  }
+//Multiple input lists are created from the input CSV file
+//The transformed lists for each caller are sent to PrepareData
+process createLists {
+  input:
+  tuple val(caller), val(sampleIDs), path(input_data, stageAs: "?/*")
+
+  output:
+  tuple val(caller), file("${caller}.txt"), file(input_data)
+
+  script:
+  def sampls=sampleIDs.join("\t")
+  """
+  paste <(printf "%s\n" ${sampls}) <(printf "%s\n" ${input_data}) > ${caller}.txt
+  """
+}
 
 //Filter and reformat the input data 
 process prepareData {
@@ -33,7 +51,7 @@ process prepareData {
   publishDir "${params.outdir}", mode: 'copy'
 
   input:
-  tuple val(caller), file(file_list)
+  tuple val(caller), file(data_files_list), path(input_data, stageAs: "?/*")
   
   output:
   tuple val(caller), file("prepareData_${caller}/"), emit: out
@@ -43,7 +61,7 @@ process prepareData {
 
   """
   /opt/conda/bin/Rscript /utility.scripts/scripts/prepareData \
-    --outdir prepareData_${caller} --${caller} ${file_list} \
+    --outdir prepareData_${caller} --${caller} ${data_files_list} \
     --genomev $params.genome_version $prepareData_options
   """
 }
@@ -188,7 +206,8 @@ process hrDetect {
 }
 
 workflow {
-  prepData = prepareData(Ch_inputdata)
+  inputLists = createLists(Ch_input)
+  prepData = prepareData(inputLists)
 
   sigFitData = signatureFit(prepData.out)
   selectSigFitData = selectSigFitSolutions(sigFitData.out)
@@ -198,7 +217,7 @@ workflow {
     .collect(flat:false).map {it.transpose()}
   selectSigFitData_tr = selectSigFitData.out
     // must output a dummy file when channel is empty
-    .ifEmpty(['novalue', file("${params.outdir}/input_lists/no_sig_selection.txt")])
+    .ifEmpty(['novalue', file("${params.outdir}/no_sig_selection.txt")])
     .collect(flat:false).map {it.transpose()}
 
   hrDetect(prepData_tr, selectSigFitData_tr)
