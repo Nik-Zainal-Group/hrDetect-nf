@@ -60,11 +60,14 @@ process prepareData {
 
   script:
   prepareData_options = params.prepareData_params ? params.prepareData_params : ""
+  prepared_filetable = "prepareData_${caller}/preparedFilesTable.tsv"
 
   """
   /opt/conda/bin/Rscript /utility.scripts/scripts/prepareData \
     --outdir prepareData_${caller} --${caller} ${data_files_list} \
     --genomev $params.genome_version $prepareData_options
+
+  sed -i '1d' $prepared_filetable   #drop the header line
   """
 }
 
@@ -87,8 +90,6 @@ process signatureFit {
   prepared_filetable = "$prepared_datadir/preparedFilesTable.tsv"
 
   """
-  sed -i '/^sample\\t/d' $prepared_filetable
-
   case ${caller} in
   
   caveman | strelka | strelkasnv)
@@ -195,8 +196,6 @@ process hrDetect {
   }
 
   """
-  sed -i '/^sample\\t/d' ${fileTables}
-
   mkdir hrDetect
   (echo "sample\t${header}" && paste ${fileTables} | cut -f1,2,5,8,11) > hrDetect/combinedFilesTable.tsv
 

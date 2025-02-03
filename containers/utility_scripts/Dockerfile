@@ -20,5 +20,6 @@ RUN conda init bash
 # Downloaded https://github.com/Nik-Zainal-Group/utility.scripts
 COPY utility.scripts /utility.scripts
 
-RUN Rscript -e 'devtools::install_github("PapenfussLab/StructuralVariantAnnotation@cb584be9474318e7f91c2cd8fca99f1212cab021")'
+# fix the version for now
+RUN Rscript -e 'devtools::install_github("PapenfussLab/StructuralVariantAnnotation@f787e1fdf64baea7468a39f02a327bc00ff33531")'
 RUN Rscript -e 'devtools::install("/utility.scripts")'
