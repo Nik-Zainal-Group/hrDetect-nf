@@ -31,6 +31,8 @@ name2,s2.ascat.csv,s2.brass.bedpe.gz,s2.caveman.vcf.gz,s2.pindel.vcf.gz
 
 The algorithms can appear in any order and must be one of ascat, caveman, pindel, strelka, strelkasnv, strelkaindels, brass, manta, canvas supported by [prepareData](https://github.com/Nik-Zainal-Group/utility.scripts/blob/master/prepareData/prepareData.R). The script requires Tabix-indexed VCF input data, except for ascat and brass where the input data format should be .csv and .bedpe.gz respectively.
 
+All four types of CNV (ascat or canvas), SV (brass or manta), Indels (pindel or strelkaindels) and SNV (caveman or strelkasnv) data must be supplied for the pipeline to progress to the hrDetect stage.
+
 ## Parameters
 
 

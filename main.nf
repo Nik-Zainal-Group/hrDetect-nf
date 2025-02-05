@@ -83,7 +83,7 @@ process signatureFit {
   tuple val(caller), file("signatureFit_${caller}/"), emit: out
 
   when:
-  caller =~ /caveman|strelka|strelkasnv|brass|manta/
+  caller =~ /caveman|strelkasnv|brass|manta/ || caller=="strelka"
 
   script:
   signaturefit_options = params."signatureFit_params_${caller}" ? params."signatureFit_params_${caller}" : ""
@@ -156,7 +156,7 @@ process hrDetect {
   file("hrDetect/")
 
   when:
-  callers=~/ascat|canvas/ && callers=~/brass|manta/ && callers=~/pindel|strelka|strelkaindels/ && callers=~/caveman|strelka|strelkasnv/
+  callers=~/ascat|canvas/ && callers=~/brass|manta/ && callers=~/pindel|strelkaindels/ && callers=~/caveman|strelkasnv/
 
   script:
   def fileTables = callers
@@ -165,7 +165,6 @@ process hrDetect {
   def replacementFlags = [
     /caveman/ : "snv",
     /brass/   : "sv",
-    /strelka/ : "snv",
     /strelkasnv/ : "snv",
     /manta/ : "sv",
   ]
@@ -183,7 +182,6 @@ process hrDetect {
     /pindel/  : "Indels_vcf_files",
     /ascat/   : "CNV_tab_files",
     /brass/   : "SV_bedpe_files",
-    /strelka/ : "SNV_vcf_files",
     /strelkasnv/ : "SNV_vcf_files",
     /strelkaindels/ : "Indels_vcf_files",
     /manta/ : "SV_bedpe_files",
