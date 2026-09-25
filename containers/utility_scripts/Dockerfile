@@ -1,25 +1,19 @@
-FROM continuumio/miniconda3 
+FROM mambaorg/micromamba:git-86a1dd8-debian13-slim
 
 LABEL description="Dockerfile containing all the tool dependency for https://github.com/Nik-Zainal-Group/utility.scripts"
 
-ARG ENV_NAME="base"
+COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/env.yaml
 
-COPY environment.yml /
-RUN conda install mamba -c conda-forge -y \
-  && mamba env update -n ${ENV_NAME} -f environment.yml && conda clean -a
+USER $MAMBA_USER
+RUN micromamba install -y -n base -c conda-forge r-base=4.6.0 \
+    && micromamba install -y -n base -f /tmp/env.yaml \
+	&& micromamba clean --all --yes
 
-# Add conda installation dir to PATH (instead of doing 'conda activate')
-ENV PATH=/opt/conda/envs/${ENV_NAME}/bin:$PATH
-
-# Dump the details of the installed packages to a file for posterity
-RUN conda env export --name ${ENV_NAME} > ${ENV_NAME}_exported.yml
-
-# Initialise bash for conda
-RUN conda init bash
+# Point PATH to the base environment's bin folder
+ENV PATH=/opt/conda/bin:$PATH
 
 # Downloaded https://github.com/Nik-Zainal-Group/utility.scripts
 COPY utility.scripts /utility.scripts
 
-# fix the version for now
-RUN Rscript -e 'devtools::install_github("PapenfussLab/StructuralVariantAnnotation@f787e1fdf64baea7468a39f02a327bc00ff33531")'
+RUN Rscript -e 'pak::pak("PapenfussLab/StructuralVariantAnnotation@f787e1fdf64baea7468a39f02a327bc00ff33531")'
 RUN Rscript -e 'devtools::install("/utility.scripts")'

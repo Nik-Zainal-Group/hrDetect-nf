@@ -7,6 +7,7 @@ dependencies:
  - bioconductor-variantannotation
  - bioconductor-bsgenome
  - bioconductor-bsgenome.hsapiens.ucsc.hg38
+ - bioconductor-bsgenome.hsapiens.ucsc.hg19
  - bioconductor-bsgenome.hsapiens.1000genomes.hs37d5
  - bioconductor-bsgenome.mmusculus.ucsc.mm10
  - bioconductor-bsgenome.cfamiliaris.ucsc.canfam3
@@ -15,6 +16,9 @@ dependencies:
  - bioconductor-genomeinfodb
  - bioconductor-genomicranges
  - bioconductor-iranges
+ - bioconductor-genomicfeatures
+ - bioconductor-biostrings
+ - r-Rcpp
  - r-nmf
  - r-foreach
  - r-doparallel
@@ -26,7 +30,23 @@ dependencies:
  - r-gensa
  - r-gmp
  - r-plyr
+ - r-reshape2
+ - r-knitr
+ - r-rmarkdown
+ - r-testthat
  - r-rcircos
+ - r-gridExtra
+ - r-stringr
+ - r-doBy
+ - r-Deriv
+ - r-pbkrtest
+ - r-car
+ - r-rstatix
+ - r-ggpubr
+ - r-factoextra
+ - r-GlobalOptions
+ - r-circlize
+ - r-rlang
  - r-scales
  - r-readr
  - r-dorng
@@ -36,4 +56,3 @@ dependencies:
  - r-cli>=3.1.0
  - r-getopt
  - fontconfig=2.13.96=ha180cfb_0 # fix for R plots font as boxes
- 

@@ -1,24 +1,23 @@
-FROM continuumio/miniconda3:24.11.1-0
+FROM mambaorg/micromamba:git-86a1dd8-debian13-slim
 
-LABEL description="Dockerfile containing all the tool dependency for https://github.com/Nik-Zainal-Group/signature.tools.lib"
+LABEL description="Dockerfile containing all the tool dependencies for https://github.com/Nik-Zainal-Group/signature.tools.lib"
 
-ARG ENV_NAME="base"
+COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/env.yaml
 
-COPY environment.yml /
-RUN conda install mamba -c conda-forge -y \
-  && mamba env update -n ${ENV_NAME} -f environment.yml && conda clean -a
+USER $MAMBA_USER
+RUN micromamba install -y -n base -c conda-forge r-base=4.6.0 \
+    && micromamba install -y -n base -f /tmp/env.yaml \
+	&& micromamba clean --all --yes
 
-# Add conda installation dir to PATH (instead of doing 'conda activate')
-ENV PATH=/opt/conda/envs/${ENV_NAME}/bin:$PATH
+# Point PATH to the base environment's bin folder
+ENV PATH=/opt/conda/bin:$PATH
 
-# Dump the details of the installed packages to a file for posterity
-RUN conda env export --name ${ENV_NAME} > ${ENV_NAME}_exported.yml
-
-# Initialise bash for conda
-RUN conda init bash
+# Downloaded https://github.com/Nik-Zainal-Group/indelsig.tools.lib
+COPY indelsig.tools.lib /indelsig.tools.lib
 
 # Downloaded https://github.com/Nik-Zainal-Group/signature.tools.lib
 COPY signature.tools.lib /signature.tools.lib
 
 RUN Rscript -e 'devtools::install_github("linxihui/NNLM")'
+RUN Rscript -e 'devtools::install("/indelsig.tools.lib")'
 RUN Rscript -e 'devtools::install("/signature.tools.lib")'
